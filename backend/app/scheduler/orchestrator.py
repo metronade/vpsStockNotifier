@@ -2,9 +2,12 @@
 
 Notification policy (no-spam):
     - State changes are logged to StockHistory unconditionally.
+    - Products absent from a snapshot are marked OUT_OF_STOCK. For dropdown-
+      driver providers (e.g. Aluy), this covers locations that disappeared
+      from the dropdown because they went OOS.
     - Telegram is dispatched ONLY on the OUT_OF_STOCK/UNKNOWN -> IN_STOCK
       transition, AND only for items the user has marked is_monitored=True.
-    - New locations notify if is_monitored=True (default for new locations).
+    - New locations surface via a dedicated "new location detected" message.
 """
 from datetime import datetime
 
@@ -130,17 +133,20 @@ async def scan_provider(provider_id: int) -> None:
 
         # --- Product state changes ---
         known_products = {p.key: p for p in provider.products}
+        seen_product_keys: set[str] = set()
         for prod in snapshot.products:
+            seen_product_keys.add(prod.key)
             existing = known_products.get(prod.key)
             if existing is None:
                 # First time we see this product — record with current state, no notify
-                # (user must opt-in via is_monitored before notifications kick in).
+                # (the matching "New location detected" message covers dropdown driver
+                # sightings; the user can opt out via is_monitored for future transitions).
                 new_prod = Product(
                     provider_id=provider.id,
                     location_id=loc_key_to_id.get(prod.location_key) if prod.location_key else None,
                     key=prod.key,
                     display_name=prod.display_name,
-                    is_monitored=False,
+                    is_monitored=True,
                     last_state=prod.current_state,
                     last_count=prod.current_count,
                 )
@@ -186,6 +192,30 @@ async def scan_provider(provider_id: int) -> None:
                     )
                 except Exception:
                     pass
+
+        # --- Absent-product detection ---
+        # Products that were previously seen but didn't show up in this snapshot
+        # transition to OUT_OF_STOCK. For dropdown-driver providers, this is how
+        # "location disappeared from the dropdown" gets recorded — when it later
+        # reappears, the OOS → IN_STOCK transition fires the normal notify path.
+        for key, existing in known_products.items():
+            if key in seen_product_keys:
+                continue
+            if existing.last_state == StockState.OUT_OF_STOCK:
+                continue
+            previous = existing.last_state
+            existing.last_state = StockState.OUT_OF_STOCK
+            existing.last_count = 0
+            _log_event(
+                db,
+                provider_id=provider.id,
+                product_id=existing.id,
+                location_id=existing.location_id,
+                event_type=EventType.STATE_CHANGE,
+                previous_state=previous.value if previous else None,
+                new_state=StockState.OUT_OF_STOCK.value,
+                details={"reason": "absent_from_snapshot"},
+            )
 
         provider.last_scan_at = now
         provider.last_scan_status = ScanStatus.OK

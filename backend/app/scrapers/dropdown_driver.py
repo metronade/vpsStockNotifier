@@ -1,15 +1,17 @@
 """Dynamic-Dropdown driver (e.g. Aluy).
 
+Treats presence in the dropdown as IN_STOCK: sites like Aluy hide OOS
+locations entirely, so a visible option is by definition orderable.
+
 Page shape:
     <select class="aluy-select w-full">
       <option value="ch">Switzerland</option>
       <option value="hk">Hong Kong</option>
       ...
     </select>
-    ...after selecting an option:
-    <div class="order-btn disabled">Out of stock</div>
-    OR
-    <div class="order-btn">Order now</div>
+
+Absence — a previously-seen option disappearing — is handled by the
+orchestrator, which transitions the corresponding Product to OUT_OF_STOCK.
 
 Also supports custom (non-<select>) dropdowns via dropdown_opener_selector +
 dropdown_option_selector.
@@ -37,14 +39,8 @@ class DropdownConfig(BaseDriverConfig):
     dropdown_option_selector: str = ""
     option_key_attribute: str = "data-key"   # empty string → use inner_text slug
 
-    # Stock-state detection after a location is selected
-    out_of_stock_text: str = "Out of stock"
-    out_of_stock_selector: str = ".order-btn.disabled, .btn.disabled, .out-of-stock"
-    in_stock_selector: str = ".order-btn:not(.disabled), .btn-primary:not(.disabled)"
-
     # Timeouts / waits
     nav_timeout_ms: int = 15000
-    post_select_wait_ms: int = 500
     monitored_location_keys: list[str] = Field(default_factory=list)
 
 
@@ -70,17 +66,12 @@ class DropdownDriver(BaseDriver):
                 and loc.key not in self.config.monitored_location_keys
             ):
                 continue
-            selected = await self._select_location(page, loc.key)
-            if not selected:
-                continue
-            await page.wait_for_timeout(self.config.post_select_wait_ms)
-            state, count = await self._read_stock_state(page)
             products.append(
                 DiscoveredProduct(
                     key=loc.key,
                     display_name=loc.display_name,
-                    current_state=state,
-                    current_count=count,
+                    current_state=StockState.IN_STOCK,
+                    current_count=None,
                     location_key=loc.key,
                 )
             )
@@ -128,49 +119,6 @@ class DropdownDriver(BaseDriver):
                 continue
             out.append(DiscoveredLocation(key=key, display_name=text))
         return out
-
-    async def _select_location(self, page: Page, key: str) -> bool:
-        select_el = await page.query_selector(self.config.dropdown_selector)
-        if select_el:
-            tag = await select_el.evaluate("el => el.tagName.toLowerCase()")
-            if tag == "select":
-                await select_el.select_option(value=key)
-                return True
-        # Custom dropdown: open, click the matching option
-        if self.config.dropdown_opener_selector:
-            opener = await page.query_selector(self.config.dropdown_opener_selector)
-            if opener:
-                await opener.click()
-                await page.wait_for_timeout(300)
-        opts = await page.query_selector_all(self.config.dropdown_option_selector)
-        for opt in opts:
-            opt_key = (
-                (await opt.get_attribute(self.config.option_key_attribute)) or ""
-                if self.config.option_key_attribute
-                else _slugify((await opt.inner_text()).strip())
-            )
-            if opt_key == key:
-                await opt.click()
-                return True
-        return False
-
-    async def _read_stock_state(self, page: Page) -> tuple[StockState, int | None]:
-        # Positive signal first — if a clearly-enabled order button is present,
-        # the location is orderable.
-        if self.config.in_stock_selector:
-            in_stock = await page.query_selector(self.config.in_stock_selector)
-            if in_stock:
-                return StockState.IN_STOCK, None
-        # Negative signals
-        if self.config.out_of_stock_selector:
-            oos_el = await page.query_selector(self.config.out_of_stock_selector)
-            if oos_el:
-                return StockState.OUT_OF_STOCK, 0
-        # Fall back to body text scan (catches overlay text without dedicated classes)
-        body_text = await page.evaluate("() => document.body.innerText") or ""
-        if self.config.out_of_stock_text.lower() in body_text.lower():
-            return StockState.OUT_OF_STOCK, 0
-        return StockState.UNKNOWN, None
 
 
 def _slugify(text: str) -> str:

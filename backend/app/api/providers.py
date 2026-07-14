@@ -76,7 +76,7 @@ async def create_provider(
                 provider_id=provider.id,
                 key=prod.key,
                 display_name=prod.display_name,
-                is_monitored=False,
+                is_monitored=True,
                 last_state=prod.current_state,
                 last_count=prod.current_count,
             )
