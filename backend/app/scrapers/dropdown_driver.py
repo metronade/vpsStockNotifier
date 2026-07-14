@@ -1,10 +1,9 @@
 """Dynamic-Dropdown driver (e.g. Aluy).
 
 Page shape:
-    <select class="location-selector">
-      <option value="">Select location...</option>
-      <option value="switzerland">Switzerland</option>
-      <option value="hong-kong">Hong Kong</option>
+    <select class="aluy-select w-full">
+      <option value="ch">Switzerland</option>
+      <option value="hk">Hong Kong</option>
       ...
     </select>
     ...after selecting an option:
@@ -31,7 +30,7 @@ from app.scrapers.base import (
 
 class DropdownConfig(BaseDriverConfig):
     # Native <select> path
-    dropdown_selector: str = "select.location-selector, select[name='location']"
+    dropdown_selector: str = "select.aluy-select, select.location-selector, select[name='location']"
 
     # Custom-dropdown path (used only if dropdown_selector doesn't match a <select>)
     dropdown_opener_selector: str = ""
