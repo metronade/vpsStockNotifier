@@ -5,10 +5,10 @@ incognito-equivalent BrowserContext so cookies/cache don't leak between provider
 or between scans.
 """
 from playwright.async_api import (
-    AsyncPlaywright,
     Browser,
     BrowserContext,
     Page,
+    Playwright,
     async_playwright,
 )
 
@@ -16,7 +16,7 @@ from app.config import settings
 from app.models.provider import Provider
 from app.scrapers.base import BaseDriver, InitialScan, StockSnapshot
 
-_playwright: AsyncPlaywright | None = None
+_playwright: Playwright | None = None
 _browser: Browser | None = None
 
 _UA = (
