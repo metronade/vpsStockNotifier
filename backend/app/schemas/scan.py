@@ -3,9 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.stock_history import EventType
+from app.schemas._base import VPSBaseModel
 
 
-class StockHistoryRead(BaseModel):
+class StockHistoryRead(VPSBaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     provider_id: int

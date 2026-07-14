@@ -4,9 +4,10 @@ from pydantic import BaseModel, ConfigDict
 
 from app.models.product import StockState
 from app.models.provider import DriverType, ScanStatus
+from app.schemas._base import VPSBaseModel
 
 
-class DashboardProduct(BaseModel):
+class DashboardProduct(VPSBaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     key: str
@@ -17,7 +18,7 @@ class DashboardProduct(BaseModel):
     location_id: int | None = None
 
 
-class DashboardLocation(BaseModel):
+class DashboardLocation(VPSBaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     key: str
@@ -26,7 +27,7 @@ class DashboardLocation(BaseModel):
     last_seen_at: datetime | None = None
 
 
-class DashboardProvider(BaseModel):
+class DashboardProvider(VPSBaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     name: str

@@ -4,9 +4,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.product import StockState
 from app.models.provider import DriverType, ScanStatus
+from app.schemas._base import VPSBaseModel
 
 
-class ProviderBase(BaseModel):
+class ProviderBase(VPSBaseModel):
     name: str
     url: str
     driver_type: DriverType
@@ -37,7 +38,7 @@ class ProviderRead(ProviderBase):
     updated_at: datetime
 
 
-class ProductRead(BaseModel):
+class ProductRead(VPSBaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     provider_id: int
@@ -53,7 +54,7 @@ class ProductUpdate(BaseModel):
     is_monitored: bool | None = None
 
 
-class LocationRead(BaseModel):
+class LocationRead(VPSBaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     provider_id: int
@@ -68,7 +69,7 @@ class LocationUpdate(BaseModel):
     is_monitored: bool | None = None
 
 
-class DiscoveredItem(BaseModel):
+class DiscoveredItem(VPSBaseModel):
     """Item surfaced by an initial scan, rendered in the dashboard for selection."""
 
     key: str
@@ -77,7 +78,7 @@ class DiscoveredItem(BaseModel):
     current_state: StockState | None = None
 
 
-class InitialScanResponse(BaseModel):
+class InitialScanResponse(VPSBaseModel):
     provider: ProviderRead
     discovered_products: list[DiscoveredItem]
     discovered_locations: list[DiscoveredItem]
