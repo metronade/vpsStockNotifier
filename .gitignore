@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Claude Code local (per-user) settings
+.claude/settings.local.json
+
+# Runtime data
+data/*.db
+data/*.db-journal
+data/*.sqlite
+data/*.sqlite-journal
+logs/*.log
+
+# Keep directories visible to git
+!data/.gitkeep
+!logs/.gitkeep
