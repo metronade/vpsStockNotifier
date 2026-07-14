@@ -10,7 +10,9 @@ import type {
   Location,
 } from './types';
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8523';
+// Relative by default — Vite dev proxy (in dev) and nginx (in prod) forward
+// /api/* to the backend container. Override with VITE_API_URL for exotic setups.
+const BASE = import.meta.env.VITE_API_URL ?? '';
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const resp = await fetch(`${BASE}${path}`, {
