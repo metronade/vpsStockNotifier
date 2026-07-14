@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     # Scheduler
     default_scan_interval_seconds: int = 300
 
+    # Display timezone for absolute timestamps rendered in the UI. The backend
+    # always serialises timestamps as UTC with offset; this setting only governs
+    # how the frontend formats absolute times (e.g. "last scan at 15:45").
+    display_timezone: str = "Europe/Berlin"
+
     @property
     def db_url(self) -> str:
         return f"sqlite:///{self.db_path}"

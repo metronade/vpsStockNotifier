@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 
+from app.config import settings
 from app.notifications import (
     TelegramError,
     TelegramNotifier,
     get_telegram_settings,
     set_telegram_settings,
 )
-from app.schemas.setting import TelegramSettings, TelegramTestResponse
+from app.schemas.setting import DisplaySettings, TelegramSettings, TelegramTestResponse
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
@@ -15,6 +16,11 @@ router = APIRouter(prefix="/api/settings", tags=["settings"])
 def get_telegram() -> TelegramSettings:
     bot_token, chat_id = get_telegram_settings()
     return TelegramSettings(bot_token=bot_token, chat_id=chat_id)
+
+
+@router.get("/display", response_model=DisplaySettings)
+def get_display() -> DisplaySettings:
+    return DisplaySettings(timezone=settings.display_timezone)
 
 
 @router.put("/telegram", response_model=TelegramSettings)

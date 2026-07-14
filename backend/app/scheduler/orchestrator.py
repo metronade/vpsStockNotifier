@@ -9,7 +9,7 @@ Notification policy (no-spam):
       transition, AND only for items the user has marked is_monitored=True.
     - New locations surface via a dedicated "new location detected" message.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -79,7 +79,7 @@ async def scan_provider(provider_id: int) -> None:
         try:
             snapshot = await run_check_stock(provider, driver)
         except Exception as exc:
-            provider.last_scan_at = datetime.utcnow()
+            provider.last_scan_at = datetime.now(timezone.utc)
             provider.last_scan_status = ScanStatus.ERROR
             provider.last_error = str(exc)[:500]
             _log_event(
@@ -93,7 +93,7 @@ async def scan_provider(provider_id: int) -> None:
             return
 
         notifier = get_notifier()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         # Map existing location keys to ids; update as we add new ones.
         loc_key_to_id: dict[str, int] = {loc.key: loc.id for loc in provider.locations}

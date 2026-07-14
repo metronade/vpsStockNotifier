@@ -70,6 +70,40 @@ export interface TelegramSettings {
   chat_id: string;
 }
 
+export interface DisplaySettings {
+  timezone: string;
+}
+
+export interface DashboardProduct {
+  id: number;
+  key: string;
+  display_name: string;
+  last_state: StockState;
+  last_count: number | null;
+  is_monitored: boolean;
+  location_id: number | null;
+}
+
+export interface DashboardLocation {
+  id: number;
+  key: string;
+  display_name: string;
+  is_monitored: boolean;
+  last_seen_at: string | null;
+}
+
+export interface DashboardProvider {
+  id: number;
+  name: string;
+  url: string;
+  driver_type: DriverType;
+  is_active: boolean;
+  last_scan_at: string | null;
+  last_scan_status: ScanStatus | null;
+  products: DashboardProduct[];
+  locations: DashboardLocation[];
+}
+
 export interface ProviderCreate {
   name: string;
   url: string;

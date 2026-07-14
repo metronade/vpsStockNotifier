@@ -6,6 +6,7 @@ import type {
   Provider,
   StockHistoryEntry,
 } from '../types';
+import { useFormatTime } from '../timezone';
 import { DriverBadge, ScanStatusDot, StockBadge } from './Badge';
 
 type Tab = 'products' | 'locations' | 'history';
@@ -24,6 +25,7 @@ export function ProviderDetail({ providerId, onBack }: ProviderDetailProps) {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
+  const formatTime = useFormatTime();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -146,10 +148,7 @@ export function ProviderDetail({ providerId, onBack }: ProviderDetailProps) {
           </a>
           <p className="text-xs text-slate-500 mt-1">
             Scans every {formatInterval(provider.scan_interval_seconds)} · last
-            scan{' '}
-            {provider.last_scan_at
-              ? new Date(provider.last_scan_at).toLocaleString()
-              : 'never'}
+            scan {formatTime(provider.last_scan_at)}
           </p>
           {provider.last_error && (
             <p className="text-xs text-rose-400 mt-1">{provider.last_error}</p>
@@ -291,9 +290,8 @@ function LocationList({
           <div className="min-w-0">
             <div className="font-medium">{l.display_name}</div>
             <div className="text-xs text-slate-500">
-              first seen {new Date(l.first_seen_at).toLocaleDateString()}
-              {l.last_seen_at &&
-                ` · last seen ${new Date(l.last_seen_at).toLocaleDateString()}`}
+              first seen {formatTime(l.first_seen_at)}
+              {l.last_seen_at && ` · last seen ${formatTime(l.last_seen_at)}`}
             </div>
           </div>
           <MonitorToggle
@@ -326,7 +324,7 @@ function HistoryList({ entries }: { entries: StockHistoryEntry[] }) {
               {EVENT_LABELS[e.event_type]}
             </span>
             <span className="text-xs text-slate-500">
-              {new Date(e.created_at).toLocaleString()}
+              {formatTime(e.created_at)}
             </span>
           </div>
           <div className="text-slate-400 mt-0.5">

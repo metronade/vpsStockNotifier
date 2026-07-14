@@ -9,3 +9,7 @@ class TelegramSettings(BaseModel):
 class TelegramTestResponse(BaseModel):
     ok: bool
     error: str | None = None
+
+
+class DisplaySettings(BaseModel):
+    timezone: str

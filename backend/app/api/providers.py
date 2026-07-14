@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -58,7 +58,7 @@ async def create_provider(
             notes=[f"Initial scan failed: {exc}"],
         )
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     for loc in scan.locations:
         db.add(
             Location(

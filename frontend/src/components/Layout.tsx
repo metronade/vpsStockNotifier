@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-type View = 'providers' | 'settings';
+type View = 'dashboard' | 'providers' | 'settings';
 
 interface LayoutProps {
   view: View;
@@ -20,6 +20,12 @@ export function Layout({ view, onViewChange, children }: LayoutProps) {
             <h1 className="text-lg font-semibold">VPS Stock Notifier</h1>
           </div>
           <nav className="flex gap-1">
+            <NavButton
+              active={view === 'dashboard'}
+              onClick={() => onViewChange('dashboard')}
+            >
+              Dashboard
+            </NavButton>
             <NavButton
               active={view === 'providers'}
               onClick={() => onViewChange('providers')}

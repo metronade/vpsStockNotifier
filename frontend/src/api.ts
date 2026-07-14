@@ -1,4 +1,6 @@
 import type {
+  DashboardProvider,
+  DisplaySettings,
   InitialScanResponse,
   Product,
   Provider,
@@ -77,4 +79,6 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  getDisplaySettings: () => req<DisplaySettings>('/api/settings/display'),
+  getDashboard: () => req<DashboardProvider[]>('/api/dashboard'),
 };

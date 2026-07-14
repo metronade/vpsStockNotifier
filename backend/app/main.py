@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import providers as providers_api
 from app.api import settings as settings_api
+from app.api import dashboard as dashboard_api
 from app.config import settings
 from app.database import init_db
 from app.scheduler import start_scheduler, stop_scheduler
@@ -34,6 +35,7 @@ app.add_middleware(
 
 app.include_router(providers_api.router)
 app.include_router(settings_api.router)
+app.include_router(dashboard_api.router)
 
 
 @app.get("/health")
